@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # FastAPI Backend (internal only - no host port exposed)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: answerforge-backend
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - APP_NAME=${APP_NAME:-AnswerForge}
+      - APP_VERSION=${APP_VERSION:-0.1.0}
+      - DEBUG=${DEBUG:-false}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost}
+    networks:
+      - answerforge-network
+    # No ports exposed to host - only accessible via nginx
+    # ports:
+    #   - "8000:8000"  # Intentionally commented out
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Nginx Reverse Proxy (only entry point exposed)
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: answerforge-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"  # Only port exposed to host
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - answerforge-network
+
+networks:
+  answerforge-network:
+    driver: bridge
+    internal: false

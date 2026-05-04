@@ -27,29 +27,68 @@ It helps EVI answer future vendor/security questionnaires **faster, more consist
 
 ### Prerequisites
 
-- Python 3.10+
-- Node.js 18+
-- Microsoft SQL Server (or Azure SQL Database)
+- Docker & Docker Compose
+- Microsoft SQL Server (existing database)
 - Git
 
-### Installation
+### Docker Setup (Recommended)
 
 ```bash
 # Clone the repository
 git clone https://github.com/Educational-Vistas/AnswerForge.git
 cd AnswerForge
 
+# Configure environment
+cp backend/.env.example .env
+# Edit .env with your database credentials
+
+# Build and start containers
+docker-compose up --build -d
+
+# View logs
+docker-compose logs -f
+
+# Stop containers
+docker-compose down
+```
+
+The API will be available at `http://localhost` (port 80).
+
+**View interactive API documentation:**
+- Swagger UI: http://localhost/docs
+- ReDoc: http://localhost/redoc
+
+### Architecture
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────────┐
+│   Browser   │────▶│    Nginx    │────▶│  FastAPI (8000) │
+│             │     │   (Port 80) │     │   (Internal)    │
+└─────────────┘     └─────────────┘     └─────────────────┘
+                                                │
+                                                ▼
+                                        ┌─────────────────┐
+                                        │  SQL Server DB  │
+                                        │ SQL01.edvistas  │
+                                        └─────────────────┘
+```
+
+**Security:** Only Nginx (port 80) is exposed to the host. The FastAPI backend runs internally on port 8000 and is not accessible from outside the Docker network.
+
+### Manual Setup (Alternative)
+
+If you prefer not to use Docker:
+
+```bash
 # Backend setup
 cd backend
 
-# Create virtual environment (recommended)
+# Create virtual environment
 python -m venv venv
 
 # Activate virtual environment
-# Windows:
-venv\Scripts\activate
-# macOS/Linux:
-source venv/bin/activate
+# Windows: venv\Scripts\activate
+# macOS/Linux: source venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
@@ -63,10 +102,6 @@ python -m uvicorn main:app --reload --port 8000
 ```
 
 The API will be available at `http://localhost:8000`.
-
-**View interactive API documentation:**
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
 
 ---
 
