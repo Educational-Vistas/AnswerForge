@@ -36,36 +36,37 @@ It helps EVI answer future vendor/security questionnaires **faster, more consist
 
 ```bash
 # Clone the repository
-git clone https://github.com/EducationalVistas/AnswerForge.git
+git clone https://github.com/Educational-Vistas/AnswerForge.git
 cd AnswerForge
 
-# Install backend dependencies
+# Backend setup
+cd backend
+
+# Create virtual environment (recommended)
+python -m venv venv
+
+# Activate virtual environment
+# Windows:
+venv\Scripts\activate
+# macOS/Linux:
+source venv/bin/activate
+
+# Install dependencies
 pip install -r requirements.txt
 
-# Install frontend dependencies
-cd frontend
-npm install
+# Configure environment
+cp .env.example .env
+# Edit .env with your database credentials
 
-# Set up the database
-python scripts/setup_database.py
-
-# Run database migrations
-python scripts/migrate.py
-
-# Import initial questionnaire data
-python scripts/import_questionnaire.py --file data/mount_pleasant_csd_2026.sql
-
-# Start the development servers
-# Terminal 1: Backend
-cd backend
+# Start the backend API
 python -m uvicorn main:app --reload --port 8000
-
-# Terminal 2: Frontend
-cd frontend
-npm run dev
 ```
 
-The application will be available at `http://localhost:3000`.
+The API will be available at `http://localhost:8000`.
+
+**View interactive API documentation:**
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
 
 ---
 
