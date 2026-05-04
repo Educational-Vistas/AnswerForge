@@ -202,22 +202,8 @@ Create a `.env` file in the project root:
 
 ```env
 # Database
-# SQL Server connection string (adjust for your environment)
-DATABASE_URL=Server=localhost;Database=AnswerForge;User Id=sa;Password=your-password;TrustServerCertificate=True;
-# Or using ODBC:
-# DATABASE_URL=DRIVER={ODBC Driver 17 for SQL Server};SERVER=localhost;DATABASE=AnswerForge;UID=sa;PWD=your-password;
-
-# Authentication (Optional - Azure AD / Microsoft Entra ID)
-# Uncomment and configure if using Azure AD authentication:
-# AZURE_CLIENT_ID=your-azure-client-id
-# AZURE_TENANT_ID=your-azure-tenant-id
-# AZURE_CLIENT_SECRET=your-azure-client-secret
-
-# AI (Optional - configure your preferred provider)
-OPENROUTER_API_KEY=your-openrouter-api-key
-
-# Storage (Optional - Azure Blob Storage)
-# AZURE_STORAGE_CONNECTION_STRING=your-storage-connection-string
+# SQL Server connection string (standard .NET format)
+DATABASE_URL=server=sql02.edvistas.local,51433;database=AnswerForge;uid=webapp;pwd=your-password;Connection Timeout=150;max pool size=200
 ```
 
 ---
