@@ -118,8 +118,8 @@ AnswerForge/
 - **State Management:** Zustand / React Query
 
 ### Infrastructure
-- **Hosting:** Azure App Service (or on-premises IIS)
-- **File Storage:** Azure Blob Storage
+- **Hosting:** On-premises Windows Server + IIS (or Azure App Service if preferred)
+- **File Storage:** Local file system (or Azure Blob Storage if preferred)
 - **CI/CD:** GitHub Actions
 
 ---
@@ -202,37 +202,29 @@ Create a `.env` file in the project root:
 
 ```env
 # Database
-DATABASE_URL=mssql+pyodbc://user:password@server/AnswerForge?driver=ODBC+Driver+17+for+SQL+Server
+# SQL Server connection string (adjust for your environment)
+DATABASE_URL=Server=localhost;Database=AnswerForge;User Id=sa;Password=your-password;TrustServerCertificate=True;
+# Or using ODBC:
+# DATABASE_URL=DRIVER={ODBC Driver 17 for SQL Server};SERVER=localhost;DATABASE=AnswerForge;UID=sa;PWD=your-password;
 
-# Authentication
-AZURE_CLIENT_ID=your-azure-client-id
-AZURE_TENANT_ID=your-azure-tenant-id
-AZURE_CLIENT_SECRET=your-azure-client-secret
+# Authentication (Optional - Azure AD / Microsoft Entra ID)
+# Uncomment and configure if using Azure AD authentication:
+# AZURE_CLIENT_ID=your-azure-client-id
+# AZURE_TENANT_ID=your-azure-tenant-id
+# AZURE_CLIENT_SECRET=your-azure-client-secret
 
-# AI
-OPENAI_API_KEY=your-openai-api-key
-# or
+# AI (Optional - configure your preferred provider)
 OPENROUTER_API_KEY=your-openrouter-api-key
 
-# Storage
-AZURE_STORAGE_CONNECTION_STRING=your-storage-connection-string
+# Storage (Optional - Azure Blob Storage)
+# AZURE_STORAGE_CONNECTION_STRING=your-storage-connection-string
 ```
 
 ---
 
 ## Deployment
 
-### Azure App Service (Recommended)
-
-```bash
-# Build and deploy via GitHub Actions
-# See .github/workflows/deploy.yml for CI/CD pipeline
-
-# Manual deployment
-az webapp up --name answerforge --resource-group evi-rg --runtime "PYTHON:3.11"
-```
-
-### On-Premises (IIS)
+### On-Premises (IIS) — Default
 
 ```bash
 # Build frontend
@@ -242,11 +234,23 @@ cd frontend && npm run build
 # See docs/DEPLOYMENT.md for detailed instructions
 ```
 
+### Azure App Service (Optional)
+
+If you prefer cloud hosting:
+
+```bash
+# Build and deploy via GitHub Actions
+# See .github/workflows/deploy.yml for CI/CD pipeline
+
+# Manual deployment
+az webapp up --name answerforge --resource-group evi-rg --runtime "PYTHON:3.11"
+```
+
 ---
 
 ## Security
 
-- Authentication via Microsoft Entra ID with MFA
+- Authentication via Microsoft Entra ID (Azure AD) with MFA — *optional, configure if using Azure*
 - Role-based access control (Admin, Editor, Reviewer, Viewer)
 - Audit logging for all sensitive changes
 - Evidence confidentiality labels (Public, NDA, Internal, Confidential, Restricted)
