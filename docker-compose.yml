@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # FastAPI Backend (internal only - no host port exposed)
+  # FastAPI Backend (localhost only - accessed via existing NGINX Proxy Manager)
   backend:
     build:
       context: ./backend
@@ -15,11 +15,10 @@ services:
       - APP_VERSION=${APP_VERSION:-0.1.0}
       - DEBUG=${DEBUG:-false}
       - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost}
-    networks:
-      - answerforge-network
-    # No ports exposed to host - only accessible via nginx
-    # ports:
-    #   - "8000:8000"  # Intentionally commented out
+    # Bind to localhost only - not exposed to the network
+    # Your NGINX Proxy Manager should proxy to http://127.0.0.1:8000
+    ports:
+      - "127.0.0.1:8000:8000"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
       interval: 30s
@@ -27,22 +26,9 @@ services:
       retries: 3
       start_period: 10s
 
-  # Nginx Reverse Proxy (only entry point exposed)
-  nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
-    container_name: answerforge-nginx
-    restart: unless-stopped
-    ports:
-      - "80:80"  # Only port exposed to host
-    depends_on:
-      backend:
-        condition: service_healthy
-    networks:
-      - answerforge-network
-
-networks:
-  answerforge-network:
-    driver: bridge
-    internal: false
+# Note: This setup assumes you have NGINX Proxy Manager (or similar) already installed
+# on your proxy server. Configure your proxy to forward to:
+#   http://127.0.0.1:8000
+#
+# The backend is bound to localhost (127.0.0.1) only and is NOT accessible from
+# other machines on the network. Only your local proxy can reach it.

@@ -29,6 +29,7 @@ It helps EVI answer future vendor/security questionnaires **faster, more consist
 
 - Docker & Docker Compose
 - Microsoft SQL Server (existing database)
+- NGINX Proxy Manager (or similar reverse proxy) — *already installed*
 - Git
 
 ### Docker Setup (Recommended)
@@ -52,28 +53,40 @@ docker-compose logs -f
 docker-compose down
 ```
 
-The API will be available at `http://localhost` (port 80).
+The API will be available at `http://localhost:8000` (localhost only).
 
 **View interactive API documentation:**
-- Swagger UI: http://localhost/docs
-- ReDoc: http://localhost/redoc
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
 
 ### Architecture
 
+This setup assumes you already have **NGINX Proxy Manager** installed on your proxy server.
+
 ```
-┌─────────────┐     ┌─────────────┐     ┌─────────────────┐
-│   Browser   │────▶│    Nginx    │────▶│  FastAPI (8000) │
-│             │     │   (Port 80) │     │   (Internal)    │
-└─────────────┘     └─────────────┘     └─────────────────┘
-                                                │
-                                                ▼
-                                        ┌─────────────────┐
-                                        │  SQL Server DB  │
-                                        │ SQL01.edvistas  │
-                                        └─────────────────┘
+┌─────────────┐     ┌─────────────────────┐     ┌─────────────────┐
+│   Browser   │────▶│  NGINX Proxy Mgr    │────▶│  FastAPI (8000) │
+│             │     │  (Your Proxy Server)│     │  (localhost)    │
+└─────────────┘     └─────────────────────┘     └─────────────────┘
+                                                        │
+                                                        ▼
+                                                ┌─────────────────┐
+                                                │  SQL Server DB  │
+                                                │ SQL01.edvistas  │
+                                                └─────────────────┘
 ```
 
-**Security:** Only Nginx (port 80) is exposed to the host. The FastAPI backend runs internally on port 8000 and is not accessible from outside the Docker network.
+**Security:** The backend binds to `127.0.0.1:8000` (localhost only). It is **not accessible from other machines** on the network. Only your local NGINX Proxy Manager can reach it.
+
+### NGINX Proxy Manager Configuration
+
+In your NGINX Proxy Manager, create a proxy host pointing to:
+
+- **Forward Hostname/IP:** `127.0.0.1`
+- **Forward Port:** `8000`
+- **Scheme:** `http`
+
+This keeps the backend secure while allowing external access through your managed proxy.
 
 ### Manual Setup (Alternative)
 
@@ -97,8 +110,8 @@ pip install -r requirements.txt
 cp .env.example .env
 # Edit .env with your database credentials
 
-# Start the backend API
-python -m uvicorn main:app --reload --port 8000
+# Start the backend API (bind to localhost only)
+python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
 ```
 
 The API will be available at `http://localhost:8000`.
