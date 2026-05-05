@@ -14,7 +14,7 @@ services:
       - APP_NAME=${APP_NAME:-AnswerForge}
       - APP_VERSION=${APP_VERSION:-0.1.0}
       - DEBUG=${DEBUG:-false}
-      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost}
+      - CORS_ORIGINS=${CORS_ORIGINS:-https://answerforge.edvistas.com,http://localhost}
     # Bind to localhost only - not exposed to the network
     # Your NGINX Proxy Manager should proxy to http://127.0.0.1:8000
     ports:

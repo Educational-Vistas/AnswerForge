@@ -80,13 +80,16 @@ This setup assumes you already have **NGINX Proxy Manager** installed on your pr
 
 ### NGINX Proxy Manager Configuration
 
-In your NGINX Proxy Manager, create a proxy host pointing to:
+Your proxy is already configured for `answerforge.edvistas.com`. In your NGINX Proxy Manager, the proxy host should point to:
 
-- **Forward Hostname/IP:** `127.0.0.1`
-- **Forward Port:** `8000`
-- **Scheme:** `http`
+| Setting | Value |
+|---|---|
+| **Domain Names** | `answerforge.edvistas.com` |
+| **Scheme** | `http` |
+| **Forward Hostname/IP** | `127.0.0.1` |
+| **Forward Port** | `8000` |
 
-This keeps the backend secure while allowing external access through your managed proxy.
+This keeps the backend secure while allowing external access through your managed proxy at **https://answerforge.edvistas.com**.
 
 ### Manual Setup (Alternative)
 
