@@ -53,11 +53,11 @@ docker-compose logs -f
 docker-compose down
 ```
 
-The API will be available at `http://localhost:8000` (localhost only).
+The API will be available at `http://localhost:3030` (localhost only).
 
 **View interactive API documentation:**
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
+- Swagger UI: http://localhost:3030/docs
+- ReDoc: http://localhost:3030/redoc
 
 ### Architecture
 
@@ -65,7 +65,7 @@ This setup assumes you already have **NGINX Proxy Manager** installed on your pr
 
 ```
 ┌─────────────┐     ┌─────────────────────┐     ┌─────────────────┐
-│   Browser   │────▶│  NGINX Proxy Mgr    │────▶│  FastAPI (8000) │
+│   Browser   │────▶│  NGINX Proxy Mgr    │────▶│  FastAPI (3030) │
 │             │     │  (Your Proxy Server)│     │  (localhost)    │
 └─────────────┘     └─────────────────────┘     └─────────────────┘
                                                         │
@@ -76,7 +76,7 @@ This setup assumes you already have **NGINX Proxy Manager** installed on your pr
                                                 └─────────────────┘
 ```
 
-**Security:** The backend binds to `127.0.0.1:8000` (localhost only). It is **not accessible from other machines** on the network. Only your local NGINX Proxy Manager can reach it.
+**Security:** The backend binds to `127.0.0.1:3030` (localhost only). It is **not accessible from other machines** on the network. Only your local NGINX Proxy Manager can reach it.
 
 ### NGINX Proxy Manager Configuration
 
@@ -87,7 +87,7 @@ Your proxy is already configured for `answerforge.edvistas.com`. In your NGINX P
 | **Domain Names** | `answerforge.edvistas.com` |
 | **Scheme** | `http` |
 | **Forward Hostname/IP** | `127.0.0.1` |
-| **Forward Port** | `8000` |
+| **Forward Port** | `3030` |
 
 This keeps the backend secure while allowing external access through your managed proxy at **https://answerforge.edvistas.com**.
 
@@ -114,10 +114,10 @@ cp .env.example .env
 # Edit .env with your database credentials
 
 # Start the backend API (bind to localhost only)
-python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
+python -m uvicorn main:app --reload --host 127.0.0.1 --port 3030
 ```
 
-The API will be available at `http://localhost:8000`.
+The API will be available at `http://localhost:3030`.
 
 ---
 

@@ -16,9 +16,9 @@ services:
       - DEBUG=${DEBUG:-false}
       - CORS_ORIGINS=${CORS_ORIGINS:-https://answerforge.edvistas.com,http://localhost}
     # Bind to localhost only - not exposed to the network
-    # Your NGINX Proxy Manager should proxy to http://127.0.0.1:8000
+    # Your NGINX Proxy Manager should proxy to http://127.0.0.1:3030
     ports:
-      - "127.0.0.1:8000:8000"
+      - "127.0.0.1:3030:8000"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
       interval: 30s
@@ -28,7 +28,7 @@ services:
 
 # Note: This setup assumes you have NGINX Proxy Manager (or similar) already installed
 # on your proxy server. Configure your proxy to forward to:
-#   http://127.0.0.1:8000
+#   http://127.0.0.1:3030
 #
 # The backend is bound to localhost (127.0.0.1) only and is NOT accessible from
 # other machines on the network. Only your local proxy can reach it.
