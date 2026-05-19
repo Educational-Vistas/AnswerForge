@@ -1,7 +1,9 @@
 version: '3.8'
 
 services:
-  # FastAPI Backend (localhost only - accessed via existing NGINX Proxy Manager)
+  # FastAPI Backend (runs inside Docker container)
+  # Accessible on the host at localhost:3030 only
+  # External access goes through NGINX Proxy Manager
   backend:
     build:
       context: ./backend
@@ -15,8 +17,8 @@ services:
       - APP_VERSION=${APP_VERSION:-0.1.0}
       - DEBUG=${DEBUG:-false}
       - CORS_ORIGINS=${CORS_ORIGINS:-https://answerforge.edvistas.com,http://localhost}
-    # Bind to localhost only - not exposed to the network
-    # Your NGINX Proxy Manager should proxy to http://127.0.0.1:3030
+    # Port mapping: host localhost:3030 -> container internal:8000
+    # Only accessible from the server running Docker
     ports:
       - "127.0.0.1:3030:8000"
     healthcheck:
@@ -26,9 +28,12 @@ services:
       retries: 3
       start_period: 10s
 
-# Note: This setup assumes you have NGINX Proxy Manager (or similar) already installed
-# on your proxy server. Configure your proxy to forward to:
-#   http://127.0.0.1:3030
+# NOTE: This backend runs inside a Docker container.
+# It is NOT accessible from other servers directly.
 #
-# The backend is bound to localhost (127.0.0.1) only and is NOT accessible from
-# other machines on the network. Only your local proxy can reach it.
+# Access methods:
+#   1. From the Docker host itself: curl http://localhost:3030/api/health
+#   2. Through NGINX Proxy Manager: https://answerforge.edvistas.com/api/health
+#
+# If your proxy is on a different server, update the Forward IP to the Docker host's
+# internal IP address in NGINX Proxy Manager.

@@ -34,6 +34,8 @@ It helps EVI answer future vendor/security questionnaires **faster, more consist
 
 ### Docker Setup (Recommended)
 
+The backend runs inside a Docker container. Only port 3030 is exposed (localhost-only).
+
 ```bash
 # Clone the repository
 git clone https://github.com/Educational-Vistas/AnswerForge.git
@@ -43,7 +45,7 @@ cd AnswerForge
 cp backend/.env.example .env
 # Edit .env with your database credentials
 
-# Build and start containers
+# Build and start the Docker container
 docker-compose up --build -d
 
 # View logs
@@ -53,41 +55,63 @@ docker-compose logs -f
 docker-compose down
 ```
 
-The API will be available at `http://localhost:3030` (localhost only).
+### Testing the API
 
-**View interactive API documentation:**
-- Swagger UI: http://localhost:3030/docs
-- ReDoc: http://localhost:3030/redoc
+The container exposes the API on `localhost:3030` (accessible only from the server itself):
+
+```bash
+# Test from the server (where Docker is running)
+curl http://localhost:3030/api/health
+# Expected: {"status":"healthy","app":"AnswerForge","version":"0.1.0"}
+
+# List assessments
+curl http://localhost:3030/api/assessments
+
+# Dashboard stats
+curl http://localhost:3030/api/dashboard
+
+# Interactive API docs (open in browser on the server)
+http://localhost:3030/docs
+```
+
+**Note:** Because the port binds to `127.0.0.1:3030`, you can only access it directly from the server running Docker. External access goes through your NGINX Proxy Manager at `https://answerforge.edvistas.com`.
 
 ### Architecture
 
-This setup assumes you already have **NGINX Proxy Manager** installed on your proxy server.
+The AnswerForge backend runs inside a **Docker container** on your server:
+
+- **Container:** FastAPI backend (internal port 8000)
+- **Host binding:** `127.0.0.1:3030` (localhost only, not exposed to network)
+- **Database:** SQL Server (external, SQL01.edvistas.local)
+- **Proxy:** Your existing NGINX Proxy Manager handles external HTTPS traffic
 
 ```
-┌─────────────┐     ┌─────────────────────┐     ┌─────────────────┐
-│   Browser   │────▶│  NGINX Proxy Mgr    │────▶│  FastAPI (3030) │
-│             │     │  (Your Proxy Server)│     │  (localhost)    │
-└─────────────┘     └─────────────────────┘     └─────────────────┘
-                                                        │
-                                                        ▼
-                                                ┌─────────────────┐
-                                                │  SQL Server DB  │
-                                                │ SQL01.edvistas  │
-                                                └─────────────────┘
+┌─────────────┐     ┌─────────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│   Browser   │────▶│  NGINX Proxy Mgr    │────▶│  Docker Host    │────▶│  FastAPI        │
+│             │     │  (Proxy Server)     │     │  (127.0.0.1)    │     │  (Container)    │
+└─────────────┘     └─────────────────────┘     └─────────────────┘     └─────────────────┘
+                                                                                │
+                                                                                ▼
+                                                                        ┌─────────────────┐
+                                                                        │  SQL Server DB  │
+                                                                        │ SQL01.edvistas  │
+                                                                        └─────────────────┘
 ```
 
-**Security:** The backend binds to `127.0.0.1:3030` (localhost only). It is **not accessible from other machines** on the network. Only your local NGINX Proxy Manager can reach it.
+**Security:** The Docker container binds to `127.0.0.1:3030` (localhost only). It is **not accessible from other machines** directly. All external access goes through your NGINX Proxy Manager at `https://answerforge.edvistas.com`.
 
 ### NGINX Proxy Manager Configuration
 
-Your proxy is already configured for `answerforge.edvistas.com`. In your NGINX Proxy Manager, the proxy host should point to:
+Your proxy is already configured for `answerforge.edvistas.com`. The proxy host should forward to the server running the Docker container:
 
-| Setting | Value |
-|---|---|
-| **Domain Names** | `answerforge.edvistas.com` |
-| **Scheme** | `http` |
-| **Forward Hostname/IP** | `127.0.0.1` |
-| **Forward Port** | `3030` |
+| Setting | Value | Notes |
+|---|---|---|
+| **Domain Names** | `answerforge.edvistas.com` | Your public domain |
+| **Scheme** | `http` | Backend is HTTP internally |
+| **Forward Hostname/IP** | `127.0.0.1` | If proxy is on the same server |
+| **Forward Port** | `3030` | Docker host port |
+
+> **If your proxy is on a different server:** Use the internal IP address of the Docker host (e.g., `10.0.0.5` or `192.168.1.10`) instead of `127.0.0.1`.
 
 This keeps the backend secure while allowing external access through your managed proxy at **https://answerforge.edvistas.com**.
 
