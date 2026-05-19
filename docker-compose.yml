@@ -2,8 +2,7 @@ version: '3.8'
 
 services:
   # FastAPI Backend (runs inside Docker container)
-  # Accessible on the host at localhost:3030 only
-  # External access goes through NGINX Proxy Manager
+  # Accessible from any PC on the network via host port 3030
   backend:
     build:
       context: ./backend
@@ -17,10 +16,10 @@ services:
       - APP_VERSION=${APP_VERSION:-0.1.0}
       - DEBUG=${DEBUG:-false}
       - CORS_ORIGINS=${CORS_ORIGINS:-https://answerforge.edvistas.com,http://localhost}
-    # Port mapping: host localhost:3030 -> container internal:8000
-    # Only accessible from the server running Docker
+    # Port mapping: host port 3030 -> container internal port 8000
+    # Exposed to the network so you can access it from other PCs
     ports:
-      - "127.0.0.1:3030:8000"
+      - "3030:8000"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
       interval: 30s
@@ -28,12 +27,10 @@ services:
       retries: 3
       start_period: 10s
 
-# NOTE: This backend runs inside a Docker container.
-# It is NOT accessible from other servers directly.
+# NOTE: This backend runs inside a Docker container on port 3030.
+# It is accessible from any machine on the network.
 #
 # Access methods:
-#   1. From the Docker host itself: curl http://localhost:3030/api/health
-#   2. Through NGINX Proxy Manager: https://answerforge.edvistas.com/api/health
-#
-# If your proxy is on a different server, update the Forward IP to the Docker host's
-# internal IP address in NGINX Proxy Manager.
+#   1. From the Docker host: curl http://localhost:3030/api/health
+#   2. From other PCs: http://<server-ip>:3030/api/health
+#   3. Through NGINX Proxy Manager: https://answerforge.edvistas.com/api/health

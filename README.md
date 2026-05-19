@@ -34,7 +34,7 @@ It helps EVI answer future vendor/security questionnaires **faster, more consist
 
 ### Docker Setup (Recommended)
 
-The backend runs inside a Docker container. Only port 3030 is exposed (localhost-only).
+The backend runs inside a Docker container. Port 3030 is exposed to the network.
 
 ```bash
 # Clone the repository
@@ -57,12 +57,15 @@ docker-compose down
 
 ### Testing the API
 
-The container exposes the API on `localhost:3030` (accessible only from the server itself):
+The container exposes the API on port 3030 (accessible from any PC on the network):
 
 ```bash
 # Test from the server (where Docker is running)
 curl http://localhost:3030/api/health
 # Expected: {"status":"healthy","app":"AnswerForge","version":"0.1.0"}
+
+# Test from another PC on the network
+curl http://<server-ip>:3030/api/health
 
 # List assessments
 curl http://localhost:3030/api/assessments
@@ -70,25 +73,25 @@ curl http://localhost:3030/api/assessments
 # Dashboard stats
 curl http://localhost:3030/api/dashboard
 
-# Interactive API docs (open in browser on the server)
-http://localhost:3030/docs
+# Interactive API docs (open in browser)
+http://<server-ip>:3030/docs
 ```
 
-**Note:** Because the port binds to `127.0.0.1:3030`, you can only access it directly from the server running Docker. External access goes through your NGINX Proxy Manager at `https://answerforge.edvistas.com`.
+**Note:** Port 3030 is exposed to the network. You can access it directly from any PC on the same network, or through your NGINX Proxy Manager at `https://answerforge.edvistas.com`.
 
 ### Architecture
 
 The AnswerForge backend runs inside a **Docker container** on your server:
 
 - **Container:** FastAPI backend (internal port 8000)
-- **Host binding:** `127.0.0.1:3030` (localhost only, not exposed to network)
+- **Host binding:** `0.0.0.0:3030` (exposed to the network)
 - **Database:** SQL Server (external, SQL01.edvistas.local)
 - **Proxy:** Your existing NGINX Proxy Manager handles external HTTPS traffic
 
 ```
 ┌─────────────┐     ┌─────────────────────┐     ┌─────────────────┐     ┌─────────────────┐
 │   Browser   │────▶│  NGINX Proxy Mgr    │────▶│  Docker Host    │────▶│  FastAPI        │
-│             │     │  (Proxy Server)     │     │  (127.0.0.1)    │     │  (Container)    │
+│             │     │  (Proxy Server)     │     │  (0.0.0.0:3030) │     │  (Container)    │
 └─────────────┘     └─────────────────────┘     └─────────────────┘     └─────────────────┘
                                                                                 │
                                                                                 ▼
@@ -98,7 +101,7 @@ The AnswerForge backend runs inside a **Docker container** on your server:
                                                                         └─────────────────┘
 ```
 
-**Security:** The Docker container binds to `127.0.0.1:3030` (localhost only). It is **not accessible from other machines** directly. All external access goes through your NGINX Proxy Manager at `https://answerforge.edvistas.com`.
+**Security:** The Docker container exposes port 3030 to the network (`0.0.0.0`). It is accessible from any PC on the same network. For external access, use your NGINX Proxy Manager at `https://answerforge.edvistas.com`.
 
 ### NGINX Proxy Manager Configuration
 
@@ -137,11 +140,11 @@ pip install -r requirements.txt
 cp .env.example .env
 # Edit .env with your database credentials
 
-# Start the backend API (bind to localhost only)
-python -m uvicorn main:app --reload --host 127.0.0.1 --port 3030
+# Start the backend API (exposed to network)
+python -m uvicorn main:app --reload --host 0.0.0.0 --port 3030
 ```
 
-The API will be available at `http://localhost:3030`.
+The API will be available at `http://0.0.0.0:3030` (accessible from any PC on the network).
 
 ---
 
